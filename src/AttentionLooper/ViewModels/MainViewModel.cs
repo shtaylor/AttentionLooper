@@ -75,10 +75,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
         };
         _countdownTimer.Tick += CountdownTimer_Tick;
 
-        // Load saved theme
+        // Load saved settings
         var savedTheme = _themeService.LoadPreference();
         _selectedTheme = savedTheme;
         _themeService.ApplyTheme(savedTheme);
+
+        var savedVolume = _themeService.LoadVolume();
+        if (savedVolume.HasValue)
+            _volume = savedVolume.Value;
+        _chimeController.Volume = (float)_volume;
+
+        var savedPeriod = _themeService.LoadPeriod();
+        if (savedPeriod.HasValue)
+            _periodTimeSpan = savedPeriod.Value;
 
         // Populate sounds
         PopulateSounds();
@@ -116,11 +125,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnPeriodTimeSpanChanged(TimeSpan? value)
     {
         ValidatePeriod();
+        if (value.HasValue && value.Value > TimeSpan.Zero)
+            _themeService.SavePeriod(value.Value);
     }
 
     partial void OnVolumeChanged(double value)
     {
         _chimeController.Volume = IsMuted ? 0f : (float)value;
+        _themeService.SaveVolume(value);
     }
 
     partial void OnIsMutedChanged(bool value)

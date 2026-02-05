@@ -46,8 +46,26 @@ public class ThemeService
     }
 
     public string? LoadSoundPreference() => LoadSetting("selectedSound");
-
     public void SaveSoundPreference(string name) => SaveSetting("selectedSound", name);
+
+    public double? LoadVolume()
+    {
+        var val = LoadSetting("volume");
+        return val != null && double.TryParse(val, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;
+    }
+
+    public void SaveVolume(double volume) =>
+        SaveSetting("volume", volume.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    public TimeSpan? LoadPeriod()
+    {
+        var val = LoadSetting("periodSeconds");
+        return val != null && double.TryParse(val, System.Globalization.CultureInfo.InvariantCulture, out var s) && s > 0
+            ? TimeSpan.FromSeconds(s) : null;
+    }
+
+    public void SavePeriod(TimeSpan period) =>
+        SaveSetting("periodSeconds", period.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
     private string? LoadSetting(string key)
     {

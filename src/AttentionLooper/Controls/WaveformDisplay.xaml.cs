@@ -28,7 +28,7 @@ public partial class WaveformDisplay : UserControl
     private const double Sigma = 0.10;
     private const double TwoSigmaSquared = 2.0 * Sigma * Sigma;
     private const double SpringOmega = 22.0;     // natural frequency (rad/s)
-    private const double SpringDamping = 0.35;    // < 1.0 = underdamped (bouncy)
+    private const double SpringDamping = 0.30;    // < 1.0 = underdamped (bouncy)
     private const double SettleEpsilon = 0.001;
 
     // Precomputed spring constants
