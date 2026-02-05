@@ -7,7 +7,7 @@ A minimal desktop app that plays a periodic chime to help you maintain focus and
 ## Features
 
 - **Periodic chime** -- set any interval (hours, minutes, seconds) and a sound plays on repeat
-- **Sound selection** -- ships with wood-block and chime sounds; drop additional `.mp3` or `.wav` files into the `AudioLibrary` folder and they appear automatically
+- **Sound selection** -- Drop `.mp3` or `.wav` files into the `AudioLibrary` folder and they appear automatically
 - **Waveform display** -- visualizes the selected sound file with an animated ripple effect during playback
 - **Volume control** -- slider with mute toggle
 - **Dark / Light / System themes** -- switches instantly, follows system preference when set to System
