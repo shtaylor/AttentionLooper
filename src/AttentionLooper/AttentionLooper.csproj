@@ -18,4 +18,10 @@
     <None Include="AudioLibrary\*.wav" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="AudioLibrary\place mp3 files here %28e.g. wood-block, chime, etc...%29.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
