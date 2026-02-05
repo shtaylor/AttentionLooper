@@ -37,6 +37,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private float[]? _waveformPeaks;
 
     [ObservableProperty]
+    private double _playbackProgress = -1.0;
+
+    [ObservableProperty]
     private bool _isLogVisible;
 
     [ObservableProperty]
@@ -57,6 +60,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _chimeController = new ChimeController(GetSoundPath, AddLog);
         _chimeController.StateChanged += OnChimeStateChanged;
         _chimeController.SoundPlaybackError += OnSoundPlaybackError;
+        _chimeController.PlaybackProgressChanged += OnChimePlaybackProgress;
+        _chimeController.PlaybackFinished += OnChimePlaybackFinished;
 
         _countdownTimer = new DispatcherTimer(DispatcherPriority.Normal, _dispatcher)
         {
@@ -72,12 +77,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Populate sounds
         PopulateSounds();
 
-        // Select default sound
+        // Select saved or default sound
         var names = _soundLibrary.GetSoundNamesSorted();
         if (names.Count > 0)
         {
+            var savedSound = _themeService.LoadSoundPreference();
             var preferred =
-                names.FirstOrDefault(n => n.Equals("wood-block", StringComparison.OrdinalIgnoreCase))
+                (savedSound != null && names.Contains(savedSound) ? savedSound : null)
+                ?? names.FirstOrDefault(n => n.Equals("wood-block", StringComparison.OrdinalIgnoreCase))
                 ?? names.FirstOrDefault(n => n.Equals("chime", StringComparison.OrdinalIgnoreCase))
                 ?? names[0];
             SelectedSoundName = preferred;
@@ -90,6 +97,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnSelectedSoundNameChanged(string? value)
     {
         if (value == null) return;
+
+        _themeService.SaveSoundPreference(value);
 
         if (_soundLibrary.TryGetPath(value, out var path))
         {
@@ -117,6 +126,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             _countdownTimer.Stop();
             IsPlaying = false;
             CountdownText = "";
+            PlaybackProgress = -1.0;
         }
         else
         {
@@ -250,6 +260,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         });
     }
 
+    private void OnChimePlaybackProgress(double progress)
+    {
+        _dispatcher.BeginInvoke(() => PlaybackProgress = progress);
+    }
+
+    private void OnChimePlaybackFinished()
+    {
+        _dispatcher.BeginInvoke(() => PlaybackProgress = -1.0);
+    }
+
     private void OnSoundPlaybackError(string message)
     {
         _dispatcher.BeginInvoke(() =>
@@ -278,6 +298,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _countdownTimer.Stop();
         _chimeController.StateChanged -= OnChimeStateChanged;
         _chimeController.SoundPlaybackError -= OnSoundPlaybackError;
+        _chimeController.PlaybackProgressChanged -= OnChimePlaybackProgress;
+        _chimeController.PlaybackFinished -= OnChimePlaybackFinished;
         _chimeController.Dispose();
     }
 }

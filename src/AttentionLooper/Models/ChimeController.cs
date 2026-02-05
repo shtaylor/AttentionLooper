@@ -18,6 +18,8 @@ public sealed class ChimeController : IDisposable
 
     public event Action? StateChanged;
     public event Action<string>? SoundPlaybackError;
+    public event Action<double>? PlaybackProgressChanged;
+    public event Action? PlaybackFinished;
 
     public ChimeController(Func<string?> getSoundPath, Action<string> log)
     {
@@ -134,11 +136,21 @@ public sealed class ChimeController : IDisposable
                     outputDevice.Init(audioFile);
                     outputDevice.Play();
 
+                    var totalSeconds = audioFile.TotalTime.TotalSeconds;
+
                     while (outputDevice.PlaybackState == PlaybackState.Playing)
                     {
                         if (token.IsCancellationRequested) break;
+                        if (totalSeconds > 0)
+                        {
+                            var progress = Math.Clamp(audioFile.CurrentTime.TotalSeconds / totalSeconds, 0.0, 1.0);
+                            PlaybackProgressChanged?.Invoke(progress);
+                        }
                         Thread.Sleep(50);
                     }
+
+                    if (!token.IsCancellationRequested)
+                        PlaybackFinished?.Invoke();
                 }
                 catch (Exception ex)
                 {

@@ -36,10 +36,20 @@ public class ThemeService
         merged.Clear();
         merged.Add(new ResourceDictionary { Source = new Uri(uri, UriKind.Relative) });
 
-        SavePreference(choice);
+        SaveSetting("theme", choice);
     }
 
     public string LoadPreference()
+    {
+        var val = LoadSetting("theme");
+        return val is "Dark" or "Light" or "System" ? val : "Dark";
+    }
+
+    public string? LoadSoundPreference() => LoadSetting("selectedSound");
+
+    public void SaveSoundPreference(string name) => SaveSetting("selectedSound", name);
+
+    private string? LoadSetting(string key)
     {
         try
         {
@@ -47,25 +57,39 @@ public class ThemeService
             {
                 var json = File.ReadAllText(SettingsPath);
                 var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("theme", out var prop))
-                {
-                    var val = prop.GetString();
-                    if (val is "Dark" or "Light" or "System")
-                        return val;
-                }
+                if (doc.RootElement.TryGetProperty(key, out var prop))
+                    return prop.GetString();
             }
         }
         catch { }
-        return "Dark";
+        return null;
     }
 
-    private void SavePreference(string choice)
+    private void SaveSetting(string key, string value)
     {
         try
         {
             var dir = Path.GetDirectoryName(SettingsPath)!;
             Directory.CreateDirectory(dir);
-            var json = JsonSerializer.Serialize(new { theme = choice });
+
+            var dict = new Dictionary<string, string>();
+            if (File.Exists(SettingsPath))
+            {
+                try
+                {
+                    var existing = File.ReadAllText(SettingsPath);
+                    var doc = JsonDocument.Parse(existing);
+                    foreach (var prop in doc.RootElement.EnumerateObject())
+                    {
+                        var s = prop.Value.GetString();
+                        if (s != null) dict[prop.Name] = s;
+                    }
+                }
+                catch { }
+            }
+
+            dict[key] = value;
+            var json = JsonSerializer.Serialize(dict);
             File.WriteAllText(SettingsPath, json);
         }
         catch { }
