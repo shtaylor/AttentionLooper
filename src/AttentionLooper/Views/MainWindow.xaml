@@ -216,42 +216,50 @@
                       Width="68" />
         </Grid>
 
-        <!-- Row 1: Waveform -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource SurfaceBrush}"
-                CornerRadius="4"
-                Margin="0,0,0,6">
-            <controls:WaveformDisplay Peaks="{Binding WaveformPeaks}" />
-        </Border>
-
-        <!-- Row 2: Play button (centered) + Countdown -->
-        <Grid Grid.Row="2" Margin="0,0,0,6">
+        <!-- Row 1: Waveform + Countdown -->
+        <Grid Grid.Row="1" Margin="0,0,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="1"
-                    Style="{StaticResource FlatButton}"
-                    Command="{Binding TogglePlayStopCommand}"
-                    ToolTip="Play / Stop"
-                    Width="36" Height="36">
-                <Path Data="{Binding IsPlaying, Converter={StaticResource PlayStopConverter}}"
-                      Fill="{DynamicResource AccentBrush}"
-                      Stretch="Uniform"
-                      Width="16" Height="16" />
-            </Button>
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SurfaceBrush}"
+                    CornerRadius="4">
+                <controls:WaveformDisplay Peaks="{Binding WaveformPeaks}" />
+            </Border>
 
-            <TextBlock Grid.Column="2"
-                       Text="{Binding CountdownText}"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       FontSize="28"
-                       FontWeight="Light"
-                       FontFamily="Segoe UI"
-                       VerticalAlignment="Center"
-                       Margin="4,0,0,0" />
+            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="2,0,0,0">
+                <!-- Hidden sizer: fixed to M:SS width at 22pt -->
+                <TextBlock x:Name="CountdownSizer" Text="00:00"
+                           FontSize="22" FontWeight="Light" FontFamily="Consolas"
+                           Visibility="Hidden" />
+                <!-- Actual text: stays at 22pt when it fits, shrinks for H:MM:SS -->
+                <Viewbox StretchDirection="DownOnly" Stretch="Uniform"
+                         MaxWidth="{Binding ActualWidth, ElementName=CountdownSizer}"
+                         HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding CountdownText}"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               FontSize="22"
+                               FontWeight="Light"
+                               FontFamily="Consolas" />
+                </Viewbox>
+            </Grid>
         </Grid>
+
+        <!-- Row 2: Play button (centered) -->
+        <Button Grid.Row="2"
+                Style="{StaticResource FlatButton}"
+                Command="{Binding TogglePlayStopCommand}"
+                ToolTip="Play / Stop"
+                Width="36" Height="36"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,6">
+            <Path Data="{Binding IsPlaying, Converter={StaticResource PlayStopConverter}}"
+                  Fill="{DynamicResource AccentBrush}"
+                  Stretch="Uniform"
+                  Width="16" Height="16" />
+        </Button>
 
         <!-- Row 3: Collapsible Log -->
         <Expander Grid.Row="3"
