@@ -38,13 +38,111 @@
             </Setter>
         </Style>
 
-        <!-- ComboBox item style -->
+        <!-- Themed ComboBox with full template override -->
         <Style x:Key="ThemedComboBox" TargetType="ComboBox">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="4,2" />
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Padding" Value="4,2" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border x:Name="Bd"
+                                            Background="{TemplateBinding Background}"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Focusable="False"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border"
+                                                Background="{DynamicResource SurfaceBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="3">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="18" />
+                                                </Grid.ColumnDefinitions>
+                                                <Path x:Name="Arrow"
+                                                      Grid.Column="1"
+                                                      Data="M 0 0 L 4 4 L 8 0 Z"
+                                                      Fill="{DynamicResource TextMutedBrush}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource ButtonHoverBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                              Margin="6,2,22,2"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left" />
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Grid x:Name="DropDown"
+                                      SnapsToDevicePixels="True"
+                                      MinWidth="{TemplateBinding ActualWidth}"
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder"
+                                            Background="{DynamicResource SurfaceBrush}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Margin="0,1,0,0">
+                                        <ScrollViewer SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- TextBox style -->
@@ -66,46 +164,52 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Row 0: Controls -->
+        <!-- Row 0: Labels + Controls -->
         <Grid Grid.Row="0" Margin="0,0,0,6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Play/Stop button -->
-            <Button Grid.Column="0"
-                    Style="{StaticResource FlatButton}"
-                    Command="{Binding TogglePlayStopCommand}"
-                    ToolTip="Play / Stop"
-                    Width="32" Height="28">
-                <Path Data="{Binding IsPlaying, Converter={StaticResource PlayStopConverter}}"
-                      Fill="{DynamicResource AccentBrush}"
-                      Stretch="Uniform"
-                      Width="14" Height="14" />
-            </Button>
+            <!-- Labels -->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Sound"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       FontSize="10"
+                       Margin="2,0,0,2" />
+            <TextBlock Grid.Row="0" Grid.Column="1"
+                       Text="Period"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       FontSize="10"
+                       Margin="6,0,6,2" />
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       Text="Theme"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       FontSize="10"
+                       Margin="0,0,0,2" />
 
             <!-- Sound dropdown -->
-            <ComboBox Grid.Column="1"
+            <ComboBox Grid.Row="1" Grid.Column="0"
                       Style="{StaticResource ThemedComboBox}"
                       ItemsSource="{Binding SoundNames}"
                       SelectedItem="{Binding SelectedSoundName}"
-                      Margin="6,0"
+                      Margin="0,0,6,0"
                       DropDownOpened="SoundComboBox_DropDownOpened" />
 
             <!-- Period input -->
-            <TextBox Grid.Column="2"
-                     Style="{StaticResource ThemedTextBox}"
-                     Text="{Binding PeriodText, UpdateSourceTrigger=PropertyChanged}"
-                     Width="56"
-                     TextAlignment="Center"
-                     ToolTip="{Binding PeriodErrorMessage}"
-                     Margin="0,0,6,0" />
+            <controls:TimeInputControl Grid.Row="1" Grid.Column="1"
+                                       TimeSpanValue="{Binding PeriodTimeSpan}"
+                                       Width="80"
+                                       ToolTip="{Binding PeriodErrorMessage}"
+                                       Margin="0,0,6,0" />
 
             <!-- Theme toggle -->
-            <ComboBox Grid.Column="3"
+            <ComboBox Grid.Row="1" Grid.Column="2"
                       Style="{StaticResource ThemedComboBox}"
                       ItemsSource="{Binding ThemeOptions}"
                       SelectedItem="{Binding SelectedTheme}"
@@ -120,15 +224,34 @@
             <controls:WaveformDisplay Peaks="{Binding WaveformPeaks}" />
         </Border>
 
-        <!-- Row 2: Countdown -->
-        <TextBlock Grid.Row="2"
-                   Text="{Binding CountdownText}"
-                   Foreground="{DynamicResource TextPrimaryBrush}"
-                   FontSize="28"
-                   FontWeight="Light"
-                   FontFamily="Segoe UI"
-                   HorizontalAlignment="Center"
-                   Margin="0,0,0,6" />
+        <!-- Row 2: Play button (centered) + Countdown -->
+        <Grid Grid.Row="2" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="1"
+                    Style="{StaticResource FlatButton}"
+                    Command="{Binding TogglePlayStopCommand}"
+                    ToolTip="Play / Stop"
+                    Width="36" Height="36">
+                <Path Data="{Binding IsPlaying, Converter={StaticResource PlayStopConverter}}"
+                      Fill="{DynamicResource AccentBrush}"
+                      Stretch="Uniform"
+                      Width="16" Height="16" />
+            </Button>
+
+            <TextBlock Grid.Column="2"
+                       Text="{Binding CountdownText}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       FontSize="28"
+                       FontWeight="Light"
+                       FontFamily="Segoe UI"
+                       VerticalAlignment="Center"
+                       Margin="4,0,0,0" />
+        </Grid>
 
         <!-- Row 3: Collapsible Log -->
         <Expander Grid.Row="3"

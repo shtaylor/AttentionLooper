@@ -11,18 +11,45 @@ public partial class WaveformDisplay : UserControl
         DependencyProperty.Register(nameof(Peaks), typeof(float[]), typeof(WaveformDisplay),
             new PropertyMetadata(null, OnPeaksChanged));
 
+    private static readonly DependencyProperty WaveformFillProperty =
+        DependencyProperty.Register(nameof(WaveformFill), typeof(Brush), typeof(WaveformDisplay),
+            new PropertyMetadata(null, OnBrushChanged));
+
+    private static readonly DependencyProperty WaveformGlowProperty =
+        DependencyProperty.Register(nameof(WaveformGlow), typeof(Brush), typeof(WaveformDisplay),
+            new PropertyMetadata(null, OnBrushChanged));
+
     public float[]? Peaks
     {
         get => (float[]?)GetValue(PeaksProperty);
         set => SetValue(PeaksProperty, value);
     }
 
+    private Brush? WaveformFill
+    {
+        get => (Brush?)GetValue(WaveformFillProperty);
+        set => SetValue(WaveformFillProperty, value);
+    }
+
+    private Brush? WaveformGlow
+    {
+        get => (Brush?)GetValue(WaveformGlowProperty);
+        set => SetValue(WaveformGlowProperty, value);
+    }
+
     public WaveformDisplay()
     {
         InitializeComponent();
+        SetResourceReference(WaveformFillProperty, "WaveformBrush");
+        SetResourceReference(WaveformGlowProperty, "WaveformGlowBrush");
     }
 
     private static void OnPeaksChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ((WaveformDisplay)d).Render();
+    }
+
+    private static void OnBrushChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((WaveformDisplay)d).Render();
     }
@@ -46,10 +73,8 @@ public partial class WaveformDisplay : UserControl
         double midY = height / 2.0;
         double barWidth = width / peaks.Length;
 
-        var fillBrush = TryFindResource("WaveformBrush") as SolidColorBrush
-            ?? new SolidColorBrush(Color.FromRgb(0x5C, 0x5C, 0x8A));
-        var glowBrush = TryFindResource("WaveformGlowBrush") as SolidColorBrush
-            ?? new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x5C));
+        var fillBrush = WaveformFill ?? new SolidColorBrush(Color.FromRgb(0x5C, 0x5C, 0x8A));
+        var glowBrush = WaveformGlow ?? new SolidColorBrush(Color.FromRgb(0x3A, 0x3A, 0x5C));
 
         // Build upper and lower point collections for the mirrored waveform
         var upperPoints = new PointCollection(peaks.Length + 2);

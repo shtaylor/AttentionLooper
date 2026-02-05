@@ -25,7 +25,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private string? _selectedSoundName;
 
     [ObservableProperty]
-    private string _periodText = "4";
+    private TimeSpan? _periodTimeSpan = TimeSpan.FromMinutes(4);
 
     [ObservableProperty]
     private string _periodErrorMessage = "";
@@ -98,7 +98,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    partial void OnPeriodTextChanged(string value)
+    partial void OnPeriodTimeSpanChanged(TimeSpan? value)
     {
         ValidatePeriod();
     }
@@ -147,23 +147,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private bool ValidatePeriod()
     {
-        if (TimeParser.TryParseFlexibleTime(PeriodText, out var ts, out var error))
+        if (!PeriodTimeSpan.HasValue || PeriodTimeSpan.Value <= TimeSpan.Zero)
         {
-            PeriodErrorMessage = "";
-            try
-            {
-                _chimeController.SetPeriod(ts);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                PeriodErrorMessage = ex.Message;
-                return false;
-            }
+            PeriodErrorMessage = "Period must be > 0.";
+            return false;
         }
-        else
+
+        PeriodErrorMessage = "";
+        try
         {
-            PeriodErrorMessage = error;
+            _chimeController.SetPeriod(PeriodTimeSpan.Value);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            PeriodErrorMessage = ex.Message;
             return false;
         }
     }

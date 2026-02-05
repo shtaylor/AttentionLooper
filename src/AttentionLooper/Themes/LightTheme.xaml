@@ -6,7 +6,7 @@
     <Color x:Key="SurfaceColor">#EDE6D6</Color>
     <Color x:Key="AccentColor">#B33A3A</Color>
     <Color x:Key="WaveformColor">#C4634F</Color>
-    <Color x:Key="WaveformGlowColor">#E8D5C0</Color>
+    <Color x:Key="WaveformGlowColor">#C4A882</Color>
     <Color x:Key="TextPrimaryColor">#2C2416</Color>
     <Color x:Key="TextMutedColor">#8C8070</Color>
     <Color x:Key="ButtonHoverColor">#E6DCC8</Color>
