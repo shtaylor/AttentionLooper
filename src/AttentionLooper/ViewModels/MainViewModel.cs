@@ -43,6 +43,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isLogVisible;
 
     [ObservableProperty]
+    private double _volume = 0.65;
+
+    [ObservableProperty]
+    private bool _isMuted;
+
+    [ObservableProperty]
     private string _selectedTheme = "Dark";
 
     public ObservableCollection<string> SoundNames { get; } = [];
@@ -110,6 +116,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnPeriodTimeSpanChanged(TimeSpan? value)
     {
         ValidatePeriod();
+    }
+
+    partial void OnVolumeChanged(double value)
+    {
+        _chimeController.Volume = IsMuted ? 0f : (float)value;
+    }
+
+    partial void OnIsMutedChanged(bool value)
+    {
+        _chimeController.Volume = value ? 0f : (float)Volume;
+    }
+
+    [RelayCommand]
+    private void ToggleMute()
+    {
+        IsMuted = !IsMuted;
     }
 
     partial void OnSelectedThemeChanged(string value)

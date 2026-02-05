@@ -130,7 +130,7 @@ public partial class TimeInputControl : UserControl
 
     private void UpdateDisplay()
     {
-        var padded = _digitBuffer.PadLeft(6, '_');
+        var padded = _digitBuffer.PadLeft(6, ' ');
         var chars = new char[8];
         chars[0] = padded[0];
         chars[1] = padded[1];

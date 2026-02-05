@@ -12,6 +12,8 @@
 
     <Window.Resources>
         <converters:BoolToPlayStopIconConverter x:Key="PlayStopConverter" />
+        <converters:BoolToMuteIconConverter x:Key="MuteIconConverter" />
+        <converters:VolumeToPercentConverter x:Key="VolumePercentConverter" />
 
         <!-- Flat button style -->
         <Style x:Key="FlatButton" TargetType="Button">
@@ -159,6 +161,7 @@
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -216,8 +219,48 @@
                       Width="68" />
         </Grid>
 
-        <!-- Row 1: Waveform + Countdown -->
+        <!-- Row 1: Volume -->
         <Grid Grid.Row="1" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    Style="{StaticResource FlatButton}"
+                    Command="{Binding ToggleMuteCommand}"
+                    ToolTip="Mute / Unmute"
+                    Width="28" Height="28"
+                    Margin="0,0,4,0">
+                <Path Data="{Binding IsMuted, Converter={StaticResource MuteIconConverter}}"
+                      Stroke="{DynamicResource TextMutedBrush}"
+                      StrokeThickness="1.2"
+                      Fill="Transparent"
+                      Stretch="Uniform"
+                      Width="14" Height="14" />
+            </Button>
+
+            <Slider Grid.Column="1"
+                    Minimum="0" Maximum="1"
+                    Value="{Binding Volume}"
+                    SmallChange="0.01" LargeChange="0.1"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding IsMuted, Converter={x:Static converters:InverseBoolConverter.Instance}}" />
+
+            <TextBlock Grid.Column="2"
+                       Text="{Binding Volume, Converter={StaticResource VolumePercentConverter}}"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       FontSize="11"
+                       FontFamily="Consolas"
+                       VerticalAlignment="Center"
+                       Width="32"
+                       TextAlignment="Right"
+                       Margin="4,0,0,0" />
+        </Grid>
+
+        <!-- Row 2: Waveform + Countdown -->
+        <Grid Grid.Row="2" Margin="0,0,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -248,8 +291,8 @@
             </Grid>
         </Grid>
 
-        <!-- Row 2: Play button (centered) -->
-        <Button Grid.Row="2"
+        <!-- Row 3: Play button (centered) -->
+        <Button Grid.Row="3"
                 Style="{StaticResource FlatButton}"
                 Command="{Binding TogglePlayStopCommand}"
                 ToolTip="Play / Stop"
@@ -262,8 +305,8 @@
                   Width="16" Height="16" />
         </Button>
 
-        <!-- Row 3: Collapsible Log -->
-        <Expander Grid.Row="3"
+        <!-- Row 4: Collapsible Log -->
+        <Expander Grid.Row="4"
                   IsExpanded="{Binding IsLogVisible}"
                   Foreground="{DynamicResource TextMutedBrush}"
                   BorderBrush="{DynamicResource BorderBrush}"

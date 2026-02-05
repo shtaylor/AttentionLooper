@@ -25,10 +25,15 @@ public partial class WaveformDisplay : UserControl
 
     // Animation constants
     private const double MaxStretch = 0.6;
-    private const double Sigma = 0.04;
+    private const double Sigma = 0.10;
     private const double TwoSigmaSquared = 2.0 * Sigma * Sigma;
-    private const double SmoothTime = 0.12;
+    private const double SpringOmega = 22.0;     // natural frequency (rad/s)
+    private const double SpringDamping = 0.35;    // < 1.0 = underdamped (bouncy)
     private const double SettleEpsilon = 0.001;
+
+    // Precomputed spring constants
+    private static readonly double SpringSigma = SpringDamping * SpringOmega;
+    private static readonly double SpringOmegaD = SpringOmega * Math.Sqrt(1.0 - SpringDamping * SpringDamping);
 
     // Geometry references
     private Polygon? _upperPolygon;
@@ -199,11 +204,14 @@ public partial class WaveformDisplay : UserControl
             return;
         }
 
+        // Skip duplicate frames (WPF can fire Rendering with same timestamp)
+        if (now == _lastFrameTime) return;
+
         double dt = (now - _lastFrameTime).TotalSeconds;
         _lastFrameTime = now;
 
         // Clamp dt to avoid huge jumps (e.g. when window was minimized)
-        if (dt <= 0 || dt > 0.1) dt = 0.016;
+        if (dt > 0.1) dt = 0.1;
 
         UpdateSliceScales(dt);
     }
@@ -243,7 +251,7 @@ public partial class WaveformDisplay : UserControl
                 target = 1.0;
             }
 
-            _sliceScales[i] = SmoothDamp(_sliceScales[i], target, ref _sliceVelocities[i], SmoothTime, deltaTime);
+            _sliceScales[i] = SpringStep(_sliceScales[i], target, ref _sliceVelocities[i], deltaTime);
 
             double x = i * barWidth + barWidth / 2.0;
             double peakHeight = peaks[i] * midY * 0.9 * _sliceScales[i];
@@ -273,14 +281,23 @@ public partial class WaveformDisplay : UserControl
         }
     }
 
-    private static double SmoothDamp(double current, double target, ref double velocity, double smoothTime, double deltaTime)
+    /// <summary>
+    /// Exact analytical solution for an underdamped harmonic oscillator.
+    /// Unconditionally stable regardless of deltaTime.
+    /// </summary>
+    private static double SpringStep(double current, double target, ref double velocity, double dt)
     {
-        double omega = 2.0 / smoothTime;
-        double x = omega * deltaTime;
-        double exp = 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x);
-        double change = current - target;
-        double temp = (velocity + omega * change) * deltaTime;
-        velocity = (velocity - omega * temp) * exp;
-        return target + (change + temp) * exp;
+        double d = current - target;
+        double decay = Math.Exp(-SpringSigma * dt);
+        double cosW = Math.Cos(SpringOmegaD * dt);
+        double sinW = Math.Sin(SpringOmegaD * dt);
+
+        double b = (velocity + SpringSigma * d) / SpringOmegaD;
+
+        double newDisplacement = decay * (d * cosW + b * sinW);
+        velocity = decay * ((-SpringSigma * d + SpringOmegaD * b) * cosW
+                          + (-SpringSigma * b - SpringOmegaD * d) * sinW);
+
+        return target + newDisplacement;
     }
 }
